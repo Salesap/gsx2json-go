@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  parser:
+    restart: always
+    build:
+      context: .
+    volumes:
+      - ./cert:/workspace/cert
+    ports:
+      - 5000:8080
+    
