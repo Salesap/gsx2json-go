@@ -1,4 +1,3 @@
-![Build CMake](https://github.com/deflinhec/gsx2json-go/workflows/Build%20CMake/badge.svg?branch=master)
 [![GitHub license](https://img.shields.io/github/license/deflinhec/gsx2json-go.svg)](https://github.com/deflinhec/gsx2json-go/blob/master/LICENSE) 
 [![GitHub release](https://img.shields.io/github/release/deflinhec/gsx2json-go.svg)](https://github.com/deflinhec/gsx2json-go/releases/)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/deflinhec/gsx2json-go/graphs/commit-activity)
