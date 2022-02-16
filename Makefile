@@ -4,27 +4,63 @@ else
 	COMPILE_TIME := $(shell date +"%Y-%m-%d %H:%M:%S")
 endif
 
+VERSION=1.0.0
+BUILD=$(shell git rev-parse HEAD)
+RELEASE=$(COMPILE_TIME)
+PLATFORMS=darwin linux windows
+ARCHITECTURES=386 amd64
+
+# Setup linker flags option for build that interoperate with variable names in src code
+LDFLAGS=-ldflags '-s -w -X "main.Version=$(VERSION)" -X "main.Build=$(BUILD)" -X "main.Release=$(RELEASE)"'
+
+# Sperate "linux-amd64" as GOOS and GOARCH
+OSARCH_SPERATOR = $(word $2,$(subst -, ,$1))
+
 .PHONY: default all
 
-default: all
+# Local build options
+gsx2json: fmt tidy
+	go build $(LDFLAGS) -o ./build/ ./cmd/gsx2json/...
 
-gsx2json:
-	go build -ldflags '-s -w -X "main.Version=1.0.0" -X "main.Build=$(COMPILE_TIME)"' \
-		-o ./build/ ./cmd/gsx2json/...
+gencert: fmt tidy
+	go build $(LDFLAGS) -o ./build/ ./cmd/gencert/...
 
-gencert:
-	go build -o ./build/ ./cmd/gencert/...
+build: gsx2json gencert
 
-install:
-	go install cmd/gsx2json/gsx2json.go
+# Architecture build options
+gsx2json-arch-%: export GOARCH=$(call OSARCH_SPERATOR,$*,1)
+gsx2json-arch-%: fmt tidy
+	go build $(LDFLAGS) -o ./build/$(GOARCH)/ ./cmd/gsx2json/...
 
+gencert-arch-%: export GOARCH=$(call OSARCH_SPERATOR,$*,1)
+gencert-arch-%: fmt tidy
+	go build $(LDFLAGS) -o ./build/$(GOARCH)/ ./cmd/gencert/...
+
+arch-%: export GOARCH=$(call OSARCH_SPERATOR,$*,1)
+arch-%: fmt tidy
+	go build $(LDFLAGS) -o ./build/$(GOARCH)/ ./cmd/...
+
+# Platform build options
+cross-compile-%: export GOOS=$(call OSARCH_SPERATOR,$*,1)
+cross-compile-%: export GOARCH=$(call OSARCH_SPERATOR,$*,2)
+cross-compile-%: 
+	go build $(LDFLAGS) -o ./build/$(GOOS)-$(GOARCH)/ ./cmd/...
+
+linux: cross-compile-linux-amd64
+darwin: cross-compile-darwin-amd64
+windows: cross-compile-windows-amd64
+
+all: darwin linux windows
+
+# Docker options
+image:
+	docker build -t gsx2json .
+
+# Misc
 fmt:
 	go fmt ./...
 
 tidy:
 	go mod tidy
 
-image:
-	docker build -t gsx2json .
-
-all: fmt gencert gsx2json tidy
+default: all

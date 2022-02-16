@@ -4,13 +4,13 @@ LABEL maintainer "deflinhec <deflinhec@gmail.com>"
 COPY . /workspace
 WORKDIR /workspace
 ENV GO111MODULE=on
-RUN apk add bash make && \
-    make all
+RUN apk add bash make git && \
+    make gsx2json
 
 FROM golang:1.17-alpine AS production
-COPY --from=builder /go/bin /go/bin
+COPY --from=builder /workspace/build /go/bin
 RUN apk add bash
 WORKDIR /workspace
 
 ENTRYPOINT [ "/go/bin/gsx2json" ]
-CMD [ "--port 8080" ]
+CMD [ "--port", "8080" ]

@@ -29,6 +29,7 @@ var opts struct {
 
 var (
 	Version = "0.0.0"
+	Release = "-"
 	Build   = "-"
 )
 
@@ -40,6 +41,7 @@ func init() {
 	opts.Version = func() {
 		fmt.Printf("Version: %v", Version)
 		fmt.Printf("\tBuild: %v", Build)
+		fmt.Printf("\tRelease: %v", Release)
 		os.Exit(0)
 	}
 	if _, err := parser.Parse(); err != nil {
@@ -68,13 +70,16 @@ func init() {
 }
 
 func main() {
-	log.Printf("Version: %v Build: %v", Version, Build)
+	log.Printf("Version: %v Build: %v Release: %v",
+		Version, Build, Release,
+	)
 	log.Printf("Port: %v", opts.Port)
 	log.Printf("SSLMode: %v", opts.SSLMode)
 	log.Printf("CacheMode: %v", opts.CacheMode)
 	router := gin.Default()
 	router.GET("/version", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
+		c.IndentedJSON(http.StatusOK, gin.H{
+			"release": Release,
 			"version": Version,
 			"build":   Build,
 		})
@@ -135,12 +140,12 @@ func main() {
 	var err error
 	addr := ":" + opts.Port
 	if opts.SSLMode {
-		err = router.Run(addr)
-	} else {
 		err = router.RunTLS(addr,
 			"./cert/cert.pem",
 			"./cert/key.pem",
 		)
+	} else {
+		err = router.Run(addr)
 	}
 	if err != nil {
 		log.Fatal(err)

@@ -62,8 +62,6 @@ After launched, gsx2json-go should be accessable in your browser [localhost:5000
 
 ## :dart: Spreadsheet rule
 
-- All column name will be lower case for consistency.
-
 - Column name begin with `NOEX_` will not export to the final result.
 
 - Make sure to add a left most column represents as an unique integer key, require for dicitionay data view.

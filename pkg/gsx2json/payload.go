@@ -53,8 +53,7 @@ func (p *Payload) Parse(b []byte, _cfg *Config) error {
 		var queried = len(_cfg.Query) == 0
 		newRow := make(map[string]interface{})
 		for j, key := range headings {
-			key = strings.ToLower(key)
-			if strings.HasPrefix(key, "noex") {
+			if strings.HasPrefix(key, "NOEX_") {
 				continue
 			}
 			var value interface{}
@@ -70,11 +69,8 @@ func (p *Payload) Parse(b []byte, _cfg *Config) error {
 				}
 			}
 			if len(_cfg.Query) > 0 {
-				lkey := strings.ToLower(key)
-				lvalue := strings.ToLower(value.(string))
-				lquery := strings.ToLower(_cfg.Query)
-				queried = queried || strings.Contains(lkey, lquery)
-				queried = queried || strings.Contains(lvalue, lquery)
+				queried = queried || strings.Contains(key, _cfg.Query)
+				queried = queried || strings.Contains(value.(string), _cfg.Query)
 			}
 			cast := func() interface{} {
 				return value.(string)
