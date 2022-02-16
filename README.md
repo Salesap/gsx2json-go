@@ -50,7 +50,7 @@ In this example below I'm going to use `5000` as port, and output log file under
 
       Cache mode is disabled by default, this feature allows client
       to query on specific data version. When cache is configure with
-      file mode, cache file will be preserve under 'cache/' folder. 
+      file mode, cache file will be preserve under `.cache/` folder. 
 
     - --ssl
 
@@ -123,8 +123,6 @@ After launched, gsx2json-go should be accessable in your browser [localhost:5000
     Show build version.
 
 ## :bookmark: Example Response
-
-[Test localhost:5000 with example spreadsheet](http://localhost:5000/api?id=1-DGS8kSiBrPOxvyM1ISCxtdqWt-I7u1Vmcp-XksQ1M4&sheet=工作表1)
 
 [Example spreadsheet](https://docs.google.com/spreadsheets/d/1-DGS8kSiBrPOxvyM1ISCxtdqWt-I7u1Vmcp-XksQ1M4/edit#gid=0)
 
@@ -213,8 +211,7 @@ There are four sections to the returned data.
   "dict": {
    "md5": "76C73EAEAFC8BA2ACD890C50E20C1613",
    "bytes": 169
-  },
-  "time": "2021-02-07T20:00:04.552Z"
+  }
  }
 }
 
