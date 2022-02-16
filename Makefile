@@ -4,7 +4,7 @@ else
 	COMPILE_TIME := $(shell date +"%Y-%m-%d %H:%M:%S")
 endif
 
-VERSION=1.0.2
+VERSION=1.0.3
 BUILD=$(shell git rev-parse HEAD)
 RELEASE=$(COMPILE_TIME)
 PLATFORMS=darwin linux windows
