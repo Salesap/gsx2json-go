@@ -7,8 +7,6 @@ endif
 VERSION=1.0.1
 BUILD=$(shell git rev-parse HEAD)
 RELEASE=$(COMPILE_TIME)
-PLATFORMS=darwin linux windows
-ARCHITECTURES=386 amd64
 
 # Setup linker flags option for build that interoperate with variable names in src code
 LDFLAGS=-ldflags '-s -w -X "main.Version=$(VERSION)" -X "main.Build=$(BUILD)" -X "main.Release=$(RELEASE)"'
@@ -43,7 +41,7 @@ arch-%: fmt tidy
 # Platform build options
 cross-compile-%: export GOOS=$(call OSARCH_SPERATOR,$*,1)
 cross-compile-%: export GOARCH=$(call OSARCH_SPERATOR,$*,2)
-cross-compile-%: 
+cross-compile-%: fmt tidy
 	go build $(LDFLAGS) -o ./build/$(GOOS)-$(GOARCH)/ ./cmd/...
 
 linux: cross-compile-linux-amd64
