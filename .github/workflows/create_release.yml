@@ -32,25 +32,30 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        arch: [amd64, 386, arm64, arm]
+        arch: [386, amd64, arm64, arm]
+        exclude:
+        - os: macos-latest
+          arch: 386
+        - os: macos-latest
+          arch: arm
     steps:
       - name: Checks-out
         uses: actions/checkout@v2
       - uses: actions/setup-go@v2
         with:
           go-version: '1.17.3'
-      - run: make gsx2json-arch-${{ matrix.arch }}
+      - run: make arch-${{ matrix.arch }}
       - name: Compress
         uses: papeloto/action-zip@v1
         with:
-          files: build
-          dest: gsx2json-go-${{ matrix.os }}.zip 
+          files: build/${{ matrix.arch }}
+          dest: gsx2json-go-${{ matrix.os }}-${{ matrix.arch }}.zip 
       - name: Upload
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.create_release.outputs.upload_url }}
-          asset_path: ./gsx2json-go-${{ matrix.os }}.zip
-          asset_name: gsx2json-go-${{ matrix.os }}.zip
+          asset_path: ./gsx2json-go-${{ matrix.os }}-${{ matrix.arch }}.zip
+          asset_name: gsx2json-go-${{ matrix.os }}-${{ matrix.arch }}.zip
           asset_content_type: application/zip
