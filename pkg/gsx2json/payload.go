@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"gitlab.com/c0b/go-ordered-json"
 )
 
 type MetaData struct {
@@ -21,10 +23,10 @@ type MetaDataInfo struct {
 }
 
 type DataView struct {
-	Columns    map[string][]interface{} `json:"columns,omitempty"`
-	Rows       []interface{}            `json:"rows,omitempty"`
-	Dictionary map[string]interface{}   `json:"dict,omitempty"`
-	Metadata   MetaDataInfo             `json:"meta,omitempty"`
+	Columns    *ordered.OrderedMap `json:"columns,omitempty"`
+	Rows       []interface{}       `json:"rows,omitempty"`
+	Dictionary *ordered.OrderedMap `json:"dict,omitempty"`
+	Metadata   MetaDataInfo        `json:"meta,omitempty"`
 }
 
 type Payload struct {
@@ -44,14 +46,14 @@ func (p *Payload) Parse(b []byte, _cfg *Config) error {
 		return fmt.Errorf("cannot parse blank spread sheet.")
 	}
 	rows := make([]interface{}, 0)
-	dictionary := make(map[string]interface{})
-	columns := make(map[string][]interface{})
+	dictionary := ordered.NewOrderedMap()
+	columns := ordered.NewOrderedMap()
 	headings := p.Values[0]
 	for i := 1; i < len(p.Values); i++ {
 		var pkey = int64(0)
 		var row = p.Values[i]
 		var queried = len(_cfg.Query) == 0
-		newRow := make(map[string]interface{})
+		newRow := ordered.NewOrderedMap()
 		for j, key := range headings {
 			if strings.HasPrefix(key, "NOEX_") {
 				continue
@@ -88,14 +90,19 @@ func (p *Payload) Parse(b []byte, _cfg *Config) error {
 					}
 				}
 			}
-			newRow[key] = cast()
+			newRow.Set(key, cast())
 			if queried {
-				columns[key] = append(columns[key], cast())
+				column := make([]interface{}, 0)
+				if last, ok := columns.GetValue(key); ok {
+					column = last.([]interface{})
+				}
+				column = append(column, cast())
+				columns.Set(key, column)
 			}
 		}
 		if queried {
 			rows = append(rows, newRow)
-			dictionary[fmt.Sprintf("%d", pkey)] = newRow
+			dictionary.Set(fmt.Sprintf("%d", pkey), newRow)
 		}
 	}
 	if _cfg.ShowColumns {
