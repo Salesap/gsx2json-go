@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"gitlab.com/c0b/go-ordered-json"
 )
 
 type MetaData struct {
@@ -21,10 +23,10 @@ type MetaDataInfo struct {
 }
 
 type DataView struct {
-	Columns    map[string][]interface{} `json:"columns,omitempty"`
-	Rows       []interface{}            `json:"rows,omitempty"`
-	Dictionary map[string]interface{}   `json:"dict,omitempty"`
-	Metadata   MetaDataInfo             `json:"meta,omitempty"`
+	Columns    *ordered.OrderedMap `json:"columns,omitempty"`
+	Rows       []interface{}       `json:"rows,omitempty"`
+	Dictionary *ordered.OrderedMap `json:"dict,omitempty"`
+	Metadata   MetaDataInfo        `json:"meta,omitempty"`
 }
 
 type Payload struct {
@@ -44,24 +46,23 @@ func (p *Payload) Parse(b []byte, _cfg *Config) error {
 		return fmt.Errorf("cannot parse blank spread sheet.")
 	}
 	rows := make([]interface{}, 0)
-	dict := make(map[string]interface{})
-	columns := make(map[string][]interface{})
+	dictionary := ordered.NewOrderedMap()
+	columns := ordered.NewOrderedMap()
 	headings := p.Values[0]
 	for i := 1; i < len(p.Values); i++ {
 		var pkey = int64(0)
 		var row = p.Values[i]
 		var queried = len(_cfg.Query) == 0
-		newRow := make(map[string]interface{})
+		newRow := ordered.NewOrderedMap()
 		for j, key := range headings {
 			if strings.HasPrefix(key, "NOEX_") {
 				continue
 			}
 			var value interface{}
-			if j < len(row) {
-				value = row[j]
-			} else {
-				value = ""
+			if j >= len(row) {
+				row = append(row, "")
 			}
+			value = row[j]
 			if pkey == 0 {
 				ivalue, err := strconv.ParseInt(value.(string), 0, 64)
 				if ivalue > 0 && err == nil {
@@ -89,48 +90,53 @@ func (p *Payload) Parse(b []byte, _cfg *Config) error {
 					}
 				}
 			}
-			newRow[key] = cast()
+			newRow.Set(key, cast())
 			if queried {
-				columns[key] = append(columns[key], cast())
+				column := make([]interface{}, 0)
+				if last, ok := columns.GetValue(key); ok {
+					column = last.([]interface{})
+				}
+				column = append(column, cast())
+				columns.Set(key, column)
 			}
 		}
 		if queried {
-			rows = append(rows, row)
-			dict[fmt.Sprintf("%d", pkey)] = row
+			rows = append(rows, newRow)
+			dictionary.Set(fmt.Sprintf("%d", pkey), newRow)
 		}
 	}
-	if _cfg.ShowColumns && !_cfg.BriefMeta {
-		b, err := json.Marshal(columns)
-		if err != nil {
-			return err
+	if _cfg.ShowColumns {
+		if !_cfg.BriefMeta {
+			p.View.Columns = columns
 		}
-		hash := md5.Sum(b)
-		p.View.Columns = columns
-		metadata := p.View.Metadata.Columns
-		metadata.Size = len(b)
-		metadata.CheckSum = hex.EncodeToString(hash[:])
+		if b, err := json.Marshal(columns); err == nil {
+			bytes := md5.Sum(b)
+			hash := hex.EncodeToString(bytes[:])
+			p.View.Metadata.Columns.Size = len(b)
+			p.View.Metadata.Columns.CheckSum = hash
+		}
 	}
-	if _cfg.ShowRows && !_cfg.BriefMeta {
-		b, err := json.Marshal(rows)
-		if err != nil {
-			return err
+	if _cfg.ShowRows {
+		if !_cfg.BriefMeta {
+			p.View.Rows = rows
 		}
-		hash := md5.Sum(b)
-		p.View.Rows = rows
-		metadata := p.View.Metadata.Rows
-		metadata.Size = len(b)
-		metadata.CheckSum = hex.EncodeToString(hash[:])
+		if b, err := json.Marshal(rows); err == nil {
+			bytes := md5.Sum(b)
+			hash := hex.EncodeToString(bytes[:])
+			p.View.Metadata.Rows.Size = len(b)
+			p.View.Metadata.Rows.CheckSum = hash
+		}
 	}
-	if _cfg.ShowDict && !_cfg.BriefMeta {
-		b, err := json.Marshal(dict)
-		if err != nil {
-			return err
+	if _cfg.ShowDict {
+		if !_cfg.BriefMeta {
+			p.View.Dictionary = dictionary
 		}
-		hash := md5.Sum(b)
-		p.View.Dictionary = dict
-		metadata := p.View.Metadata.Dictionary
-		metadata.Size = len(b)
-		metadata.CheckSum = hex.EncodeToString(hash[:])
+		if b, err := json.Marshal(dictionary); err == nil {
+			bytes := md5.Sum(b)
+			hash := hex.EncodeToString(bytes[:])
+			p.View.Metadata.Dictionary.Size = len(b)
+			p.View.Metadata.Dictionary.CheckSum = hash
+		}
 	}
 	return nil
 }
