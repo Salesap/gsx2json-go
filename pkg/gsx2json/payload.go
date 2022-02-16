@@ -71,8 +71,11 @@ func (p *Payload) Parse(b []byte, _cfg *Config) error {
 				}
 			}
 			if len(_cfg.Query) > 0 {
-				queried = queried || strings.Contains(key, _cfg.Query)
-				queried = queried || strings.Contains(value.(string), _cfg.Query)
+				lkey := strings.ToLower(key)
+				lvalue := strings.ToLower(value.(string))
+				lquery := strings.ToLower(_cfg.Query)
+				queried = queried || strings.Contains(lkey, lquery)
+				queried = queried || strings.Contains(lvalue, lquery)
 			}
 			cast := func() interface{} {
 				return value.(string)
