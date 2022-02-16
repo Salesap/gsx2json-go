@@ -135,12 +135,12 @@ func main() {
 	var err error
 	addr := ":" + opts.Port
 	if opts.SSLMode {
-		err = router.Run(addr)
-	} else {
 		err = router.RunTLS(addr,
 			"./cert/cert.pem",
 			"./cert/key.pem",
 		)
+	} else {
+		err = router.Run(addr)
 	}
 	if err != nil {
 		log.Fatal(err)
