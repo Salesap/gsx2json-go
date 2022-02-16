@@ -25,7 +25,7 @@ func NewConfig() *Config {
 }
 
 func (cfg *Config) Parse(c *gin.Context) error {
-	if v, ok := c.GetQuery("query"); ok {
+	if v, ok := c.GetQuery("q"); ok {
 		cfg.Query = v
 	}
 	if v, ok := c.GetQuery("integers"); ok {
