@@ -59,10 +59,11 @@ func (p *Payload) Parse(b []byte, _cfg *Config) error {
 				continue
 			}
 			var value interface{}
-			if j >= len(row) {
-				row = append(row, "")
+			if j < len(row) {
+				value = row[j]
+			} else {
+				value = ""
 			}
-			value = row[j]
 			if pkey == 0 {
 				ivalue, err := strconv.ParseInt(value.(string), 0, 64)
 				if ivalue > 0 && err == nil {
