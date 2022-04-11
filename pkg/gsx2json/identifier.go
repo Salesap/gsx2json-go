@@ -2,6 +2,7 @@ package gsx2json
 
 import (
 	"errors"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
@@ -33,7 +34,12 @@ func (id *Identifier) Parse(c *gin.Context) error {
 		return errors.New("You must provide a sheet name.")
 	}
 	if len(id.ApiKey) == 0 {
-		return errors.New("You must provide an api key.")
+		if v, ok := os.LookupEnv("API_KEY"); ok {
+			id.ApiKey = v
+		}
+		if len(id.ApiKey) == 0 {
+			return errors.New("You must provide an api key.")
+		}
 	}
 	return nil
 }
