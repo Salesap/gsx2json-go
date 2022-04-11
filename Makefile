@@ -4,8 +4,8 @@ else
 	COMPILE_TIME := $(shell date +"%Y-%m-%d %H:%M:%S")
 endif
 
-VERSION=1.0.3
-BUILD=$(shell git rev-parse HEAD)
+VERSION=1.0.4
+BUILD=1.0.4
 RELEASE=$(COMPILE_TIME)
 PLATFORMS=darwin linux windows
 ARCHITECTURES=386 amd64

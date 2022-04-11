@@ -4,7 +4,7 @@ LABEL maintainer "deflinhec <deflinhec@gmail.com>"
 COPY . /workspace
 WORKDIR /workspace
 ENV GO111MODULE=on
-RUN apk add bash make git && \
+RUN apk add bash make && \
     make gsx2json
 
 FROM golang:1.17-alpine AS production
